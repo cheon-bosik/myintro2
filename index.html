@@ -1,29 +1,331 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>오늘의 한마디</title>
+<title>소개 홈페이지</title>
 <style>
-  body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
-         background:#0f172a; color:#f8fafc;
-         font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; }
-  .card { background:#1e293b; border-radius:28px; padding:40px 28px; width:86%; max-width:420px;
-          text-align:center; box-shadow:0 20px 50px rgba(0,0,0,.45); }
-  .date { font-size:30px; font-weight:700; letter-spacing:1px; }
-  .day  { font-size:20px; color:#94a3b8; margin-top:8px; }
-  .line { width:60px; height:3px; background:#38bdf8; margin:26px auto; border-radius:3px; }
-  .quote{ font-size:24px; line-height:1.6; font-weight:600; color:#e2e8f0; }
-  .foot { margin-top:30px; font-size:14px; color:#64748b; line-height:1.7; }
+/* ===== 색상 정의 (여기 색만 바꾸면 전체 분위기가 바뀝니다) ===== */
+:root{--cream:#f6f1e7;--gold:#e8bf78;--gold-d:#b8862f;--gray:#b9b4a8}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:"Malgun Gothic","맑은 고딕","Apple SD Gothic Neo",sans-serif;font-size:18px;line-height:1.75;color:var(--cream);
+ background:linear-gradient(165deg,#05070f 0%,#0a1022 50%,#050811 100%);background-attachment:fixed;overflow-x:hidden}
+/* 아주 흐린 격자무늬: 흰색 4.5%, 78px 간격 */
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+ background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);
+ background-size:78px 78px}
+main,footer{position:relative;z-index:1}
+a{color:inherit;text-decoration:none}
+
+/* ===== 맨 위 스크롤 진행 막대 ===== */
+#progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:200;background:linear-gradient(90deg,#b8862f,#f9e8bd,#b8862f)}
+
+/* ===== 고정 메뉴 ===== */
+header{position:fixed;top:0;left:0;right:0;z-index:100;padding:20px 5vw;display:flex;justify-content:space-between;align-items:center;
+ background:rgba(7,11,24,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+ border-bottom:1px solid rgba(232,191,120,.22);transition:padding .35s ease}
+header.scrolled{padding:12px 5vw}
+.brand{display:flex;align-items:center;gap:12px}
+.badge{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#1a1204;
+ background:linear-gradient(135deg,#f9e8bd,#e8bf78 50%,#b8862f)}
+.brand b{display:block;font-size:19px;line-height:1.2}
+.brand small{display:block;font-size:12px;color:var(--gold);letter-spacing:.12em}
+nav{display:flex;gap:34px}
+nav a{position:relative;padding:4px 0}
+nav a::after{content:"";position:absolute;left:0;bottom:0;height:2px;width:100%;background:var(--gold);transform:scaleX(0);transform-origin:left;transition:transform .3s}
+nav a:hover::after{transform:scaleX(1)}
+
+/* ===== 첫 화면 ===== */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:140px 6vw 80px;position:relative;overflow:hidden}
+.hero>*{position:relative;z-index:2}
+.title-wrap{position:relative;display:inline-block}
+/* 이름 뒤 회전 광선: 26도 폭, blur 28px, 40초 */
+.rays{position:absolute;left:50%;top:50%;width:min(900px,160%);aspect-ratio:1;margin:calc(min(900px,160%)/-2) 0 0 calc(min(900px,160%)/-2);z-index:-1;border-radius:50%;
+ background:conic-gradient(from 0deg,rgba(232,191,120,.55) 0deg,rgba(232,191,120,.55) 26deg,transparent 26deg 360deg);
+ filter:blur(28px);opacity:.55;animation:spin 40s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+h1{font-size:clamp(46px,7.6vw,104px);letter-spacing:.04em;line-height:1.2;font-weight:800;
+ background:linear-gradient(90deg,#f9e8bd 0%,#e8bf78 22%,#fff8e6 44%,#d8a94f 66%,#f9e8bd 100%);background-size:260% 100%;
+ -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;animation:shine 7s linear infinite}
+@keyframes shine{0%{background-position:100% 0}100%{background-position:0 0}}
+.greet{margin-top:18px;font-size:22px}
+.tag{display:inline-block;margin-top:22px;padding:6px 20px;font-size:16px;color:var(--gold);border:1px solid rgba(232,191,120,.5);border-radius:999px}
+.scroll-hint{margin-top:56px;font-size:16px;color:var(--gold)}
+.scroll-hint i{display:block;width:1px;height:46px;margin:12px auto 0;overflow:hidden;position:relative}
+.scroll-hint i::after{content:"";position:absolute;left:0;top:-100%;width:1px;height:100%;background:linear-gradient(var(--gold),transparent);animation:drip 2.2s ease-in infinite}
+@keyframes drip{to{top:100%}}
+
+/* 떠다니는 빛 덩어리 3개 */
+.orb{position:absolute;border-radius:50%;filter:blur(64px);z-index:1;pointer-events:none}
+.o1{width:420px;height:420px;background:rgba(232,191,120,.30);left:-8%;top:12%;animation:float 16s ease-in-out infinite}
+.o2{width:340px;height:340px;background:rgba(70,110,200,.34);right:-5%;top:38%;animation:float 21s ease-in-out infinite}
+.o3{width:260px;height:260px;background:rgba(232,191,120,.16);left:38%;bottom:-6%;animation:float 26s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(-24px)}50%{transform:translateY(24px)}}
+/* 반짝이는 별 6개: 위치·시작 시간이 각각 다름 */
+.star{position:absolute;border-radius:50%;background:var(--gold);box-shadow:0 0 12px 3px #e8bf78;z-index:1;animation:twinkle 5s ease-in-out infinite}
+@keyframes twinkle{0%,100%{transform:scale(.5);opacity:.4}50%{transform:scale(1.5);opacity:1}}
+.s1{width:4px;height:4px;left:12%;top:22%;animation-delay:0s}
+.s2{width:3px;height:3px;left:82%;top:18%;animation-delay:.8s}
+.s3{width:5px;height:5px;left:70%;top:68%;animation-delay:1.6s}
+.s4{width:3px;height:3px;left:24%;top:74%;animation-delay:2.4s}
+.s5{width:4px;height:4px;left:90%;top:48%;animation-delay:3.2s}
+.s6{width:5px;height:5px;left:48%;top:12%;animation-delay:4s}
+
+/* ===== 흐르는 띠(마퀴): 34초, 마우스 올리면 멈춤 ===== */
+.marquee{overflow:hidden;border-block:1px solid rgba(232,191,120,.22);padding:14px 0;background:rgba(255,255,255,.02)}
+.marquee div{display:inline-block;white-space:nowrap;color:var(--gold);font-size:20px;letter-spacing:.1em;animation:run 34s linear infinite}
+.marquee:hover div{animation-play-state:paused}
+@keyframes run{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ===== 공통 구역 ===== */
+section{max-width:1180px;margin:0 auto;padding:100px 6vw 20px}
+h2{font-size:clamp(30px,4vw,42px);color:var(--gold);margin-bottom:12px}
+.sub{color:var(--gray);margin-bottom:44px}
+
+/* ===== 유리 카드 3장 ===== */
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+.glass{position:relative;border-radius:24px;padding:40px 34px;background:rgba(255,255,255,.05);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+ border:1px solid rgba(255,255,255,.09);transition:transform .35s,border-color .35s,box-shadow .35s}
+.glass:hover{transform:translateY(-12px);border-color:rgba(232,191,120,.7);box-shadow:0 0 28px rgba(232,191,120,.22),0 30px 60px rgba(0,0,0,.6)}
+.glass .num{position:absolute;left:30px;top:18px;font-size:40px;font-weight:800;color:rgba(232,191,120,.35)}
+.glass .ico{font-size:44px;margin:28px 0 10px}
+.glass h3{font-size:25px;color:#fff;margin-bottom:8px}
+.glass p{font-size:17px;color:var(--gray)}
+
+/* ===== 작은 카드 6장 ===== */
+.grid6{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.mini{min-height:210px;border-radius:22px;padding:30px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;cursor:pointer;
+ background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.09);transition:transform .35s,border-color .35s;font:inherit;color:inherit}
+.mini:hover{transform:scale(1.04);border-color:var(--gold)}
+.mini .ico{font-size:44px}
+.mini b{font-size:22px;margin-top:6px}
+.mini span{font-size:15px;color:var(--gray)}
+
+/* ===== 3단계 길 안내 ===== */
+.steps{display:flex;justify-content:space-between;align-items:flex-start;position:relative;gap:20px}
+.steps::before{content:"";position:absolute;left:12%;right:12%;top:50px;border-top:2px solid rgba(232,191,120,.35)}
+.step{flex:1;text-align:center;position:relative}
+.circle{position:relative;width:100px;height:100px;margin:0 auto 16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:40px;background:#0a1022}
+/* 금색 점선 테두리가 26초에 한 바퀴 회전 */
+.circle::before{content:"";position:absolute;inset:0;border-radius:50%;border:2px dashed var(--gold);animation:spin 26s linear infinite}
+.step h3{font-size:22px;color:#fff}
+.step p{font-size:16px;color:var(--gray)}
+
+/* ===== 카드 하나씩 나타나기 ===== */
+.reveal{opacity:0;transform:translateY(48px);transition:opacity .8s ease,transform .8s ease}
+.reveal.show{opacity:1;transform:none}
+.glass.reveal.show:hover{transform:translateY(-12px)}
+.mini.reveal.show:hover{transform:scale(1.04)}
+
+/* ===== 사진 창(슬라이드) ===== */
+#modal{position:fixed;inset:0;z-index:300;background:rgba(2,4,10,.88);display:none;align-items:center;justify-content:center;padding:20px}
+#modal.open{display:flex}
+.box{position:relative;width:min(880px,100%);text-align:center}
+.photo{width:100%;aspect-ratio:4/3;border-radius:18px;overflow:hidden;background:#0a1022;border:1px solid rgba(232,191,120,.3);position:relative}
+.photo img{width:100%;height:100%;object-fit:contain;display:block;transform:none!important}
+/* 사진이 없을 때: 금색 카메라 아이콘 + 준비 중 (CSS로 그림) */
+.ph{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;background:#0a1022;color:var(--gold);gap:16px}
+.cam{position:relative;width:84px;height:60px;border:3px solid var(--gold);border-radius:10px}
+.cam::before{content:"";position:absolute;left:50%;top:-12px;width:30px;height:10px;margin-left:-15px;border:3px solid var(--gold);border-bottom:0;border-radius:6px 6px 0 0}
+.cam::after{content:"";position:absolute;left:50%;top:50%;width:28px;height:28px;margin:-14px 0 0 -14px;border:3px solid var(--gold);border-radius:50%}
+.photo.fail .ph{display:flex}.photo.fail img{display:none}
+.ctrl{display:flex;justify-content:center;align-items:center;gap:26px;margin-top:18px}
+.arrow,.close{width:48px;height:48px;border-radius:50%;border:2px solid var(--gold);background:rgba(7,11,24,.8);color:var(--gold);font-size:22px;cursor:pointer}
+.arrow:hover,.close:hover{background:rgba(232,191,120,.2)}
+.close{position:absolute;right:-6px;top:-60px}
+#count{min-width:70px;font-size:20px}
+
+/* ===== 맨 위로 가기 버튼 ===== */
+#top{position:fixed;right:24px;bottom:24px;width:52px;height:52px;border-radius:50%;border:2px solid var(--gold);background:rgba(7,11,24,.85);color:var(--gold);font-size:22px;cursor:pointer;z-index:150;opacity:0;pointer-events:none;transition:opacity .3s}
+#top.on{opacity:1;pointer-events:auto}
+
+footer{text-align:center;padding:80px 6vw 50px;color:var(--gray);font-size:16px}
+footer b{color:var(--gold);font-size:20px}
+
+/* ===== 휴대폰: 1열로 접기 ===== */
+@media(max-width:800px){
+ .grid3,.grid6{grid-template-columns:1fr}
+ .steps{flex-direction:column;align-items:center}.steps::before{display:none}
+ nav{gap:16px;font-size:15px}.brand small{display:none}
+ .close{right:0}
+}
+@media(prefers-reduced-motion:reduce){*{animation-duration:0s!important}}
+
+.today-btn{display:inline-block;margin-top:26px;padding:14px 34px;font-size:18px;font-weight:700;color:#1a1204;background:linear-gradient(135deg,#f9e8bd,#e8bf78 50%,#b8862f);border-radius:999px}
 </style>
 </head>
 <body>
-<div class="card">
-  <div class="date">2026년 11월 21일</div>
-  <div class="day">토요일</div>
-  <div class="line"></div>
-  <div class="quote">&ldquo;어제의 나보다 한 줄만 더.&rdquo;</div>
-  <div class="foot">이 페이지는 오늘 15:26에<br>로봇이 자동으로 새로 썼습니다.</div>
+<div id="progress"></div>
+
+<!-- ===== 고정 메뉴 ===== -->
+<header id="nav">
+  <!-- 배지와 이름 전체를 누르면 맨 위(홈)로 올라갑니다 -->
+  <a class="brand" href="#home"><span class="badge" id="badge">홍</span><span><b class="myname">홍길동</b><small>COMPUTER TEACHER</small></span></a>
+  <nav>
+    <a href="#work">하는 일</a>
+    <a href="#like">좋아하는 것</a>
+    <a href="#way">가는 길</a>
+    <a href="#contact">연락처</a>
+  </nav>
+</header>
+
+<main id="home">
+<!-- ===== 첫 화면 ===== -->
+<div class="hero">
+  <div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div>
+  <i class="star s1"></i><i class="star s2"></i><i class="star s3"></i><i class="star s4"></i><i class="star s5"></i><i class="star s6"></i>
+  <div class="title-wrap"><div class="rays"></div><h1 class="myname">홍길동</h1></div>
+  <!-- 여기만 고치면 됩니다: 한 줄 인사 -->
+  <p class="greet" id="greet">안녕하세요, 5060 컴퓨터 선생님 홍길동입니다</p>
+  <a class="today-btn" href="today.html" target="_blank" rel="noopener">오늘의 한마디 열기</a>
+  <span class="tag">AI · 바이브 코딩 · 깃허브</span>
+  <div class="scroll-hint">아래로 내려 보세요 ↓<i></i></div>
 </div>
+
+<!-- ===== 흐르는 띠 (같은 글을 두 번 써서 끊김 없이 흐름) ===== -->
+<div class="marquee"><div id="mq"></div></div>
+
+<!-- ===== 제가 하는 일: 카드 3장 ===== -->
+<section id="work">
+  <h2>제가 하는 일</h2>
+  <p class="sub">천천히, 쉬운 말로, 직접 해 보며 배웁니다.</p>
+  <div class="grid3" id="works"></div>
+</section>
+
+<!-- ===== 내가 좋아하는 것: 작은 카드 6장 ===== -->
+<section id="like">
+  <h2>내가 좋아하는 것</h2>
+  <p class="sub">카드를 누르면 사진을 넘겨 볼 수 있습니다.</p>
+  <div class="grid6" id="likes"></div>
+</section>
+
+<!-- ===== 수업에서 가는 길 ===== -->
+<section id="way">
+  <h2>수업에서 가는 길</h2>
+  <p class="sub">세 걸음이면 나만의 홈페이지가 완성됩니다.</p>
+  <div class="steps">
+    <div class="step reveal"><div class="circle">🛠️</div><h3>1. 만들기</h3><p>AI와 함께 홈페이지를 만듭니다</p></div>
+    <div class="step reveal"><div class="circle">☁️</div><h3>2. 올리기</h3><p>깃허브에 파일을 올립니다</p></div>
+    <div class="step reveal"><div class="circle">🔗</div><h3>3. 주소 받기</h3><p>내 홈페이지 주소를 받습니다</p></div>
+  </div>
+</section>
+</main>
+
+<!-- ===== 맨 아래 ===== -->
+<footer id="contact">
+  <b class="myname">홍길동</b>
+  <p id="contactLine">blog.naver.com/내아이디</p>
+  <p>© 2026</p>
+</footer>
+
+<!-- ===== 사진 창 ===== -->
+<div id="modal" aria-hidden="true">
+  <div class="box" id="box">
+    <button class="close" id="close" aria-label="닫기">×</button>
+    <div class="photo" id="photo">
+      <img id="img" alt="">
+      <div class="ph"><div class="cam"></div><div>준비 중</div></div>
+    </div>
+    <div class="ctrl">
+      <button class="arrow" id="prev" aria-label="이전">◀</button>
+      <span id="count">1 / 5</span>
+      <button class="arrow" id="next" aria-label="다음">▶</button>
+    </div>
+  </div>
+</div>
+
+<button id="top" aria-label="맨 위로">↑</button>
+
+<script>
+/* ============ 여기만 고치면 됩니다 (내 정보) ============ */
+const MY_NAME = "홍길동";                                   // ← 내 이름
+const GREETING = "안녕하세요, 5060 컴퓨터 선생님 " + MY_NAME + "입니다"; // ← 한 줄 인사
+const CONTACT = "blog.naver.com/내아이디";                   // ← 연락처
+// 하는 일 3가지: [이모지, 제목, 설명]
+const WORKS = [
+  ["🤖","AI 활용 강의","AI에게 물어보고 시키는 법을 쉽게 알려드립니다."],
+  ["💻","바이브 코딩 실습","말로 설명하면 AI가 홈페이지를 만들어 줍니다."],
+  ["🐙","깃·깃허브 특강","만든 파일을 인터넷에 올리는 법을 배웁니다."]
+];
+// 좋아하는 것 6가지: [이모지, 이름] ← 이름이 곧 사진 폴더 이름(띄어쓰기는 자동 제거)
+const LIKES = [
+  ["⛰️","등산"],["☕","커피 한 잔"],["📷","사진 찍기"],
+  ["✈️","여행"],["🎵","노래 듣기"],["🍲","손맛 요리"]
+];
+/* ====================================================== */
+
+const $ = id => document.getElementById(id);
+
+// 이름·인사·연락처 넣기
+document.querySelectorAll(".myname").forEach(e => e.textContent = MY_NAME);
+$("badge").textContent = MY_NAME.charAt(0);           // 배지 = 이름 첫 글자
+$("greet").textContent = GREETING;
+$("contactLine").textContent = CONTACT;
+const mqText = "✦ " + LIKES.map(l => l[1]).join(" ✦ ") + " ✦ " + CONTACT + " ";
+$("mq").textContent = mqText.repeat(4);               // 두 번 반복 구간으로 끊김 없이 흐름
+
+// 카드 3장 만들기
+$("works").innerHTML = WORKS.map((w,i) =>
+  `<div class="glass reveal"><span class="num">0${i+1}</span><div class="ico">${w[0]}</div><h3>${w[1]}</h3><p>${w[2]}</p></div>`).join("");
+// 작은 카드 6장 만들기
+$("likes").innerHTML = LIKES.map((l,i) =>
+  `<button class="mini reveal" data-i="${i}"><div class="ico">${l[0]}</div><b>${l[1]}</b><span>사진 보기</span></button>`).join("");
+
+// 스크롤 반응: 메뉴 높이, 진행 막대, 맨 위 버튼
+const nav = $("nav"), bar = $("progress"), topBtn = $("top");
+function onScroll(){
+  const y = window.scrollY, max = document.documentElement.scrollHeight - innerHeight;
+  nav.classList.toggle("scrolled", y > 10);
+  bar.style.width = (max > 0 ? y / max * 100 : 0) + "%";
+  topBtn.classList.toggle("on", y > 500);
+}
+addEventListener("scroll", onScroll, {passive:true}); onScroll();
+topBtn.onclick = () => scrollTo({top:0, behavior:"smooth"});
+
+// 카드 하나씩 나타나기 (한 줄에서 0.1초씩 늦게)
+const io = new IntersectionObserver(es => es.forEach(e => {
+  if(e.isIntersecting){
+    const sibs = [...e.target.parentElement.children];
+    e.target.style.transitionDelay = (sibs.indexOf(e.target) * 0.1) + "s";
+    e.target.classList.add("show"); io.unobserve(e.target);
+  }
+}), {threshold:.15});
+document.querySelectorAll(".reveal").forEach(e => io.observe(e));
+
+// ===== 사진 슬라이드 =====
+let folder = "", idx = 1;
+const TOTAL = 5, modal = $("modal"), photo = $("photo"), img = $("img");
+function show(){
+  photo.classList.remove("fail");
+  img.src = encodeURI(folder + "/" + idx + ".jpg");   // 한글 폴더도 인식
+  $("count").textContent = idx + " / " + TOTAL;
+}
+img.onerror = () => photo.classList.add("fail");      // 없으면 '준비 중' 표시
+function openModal(i){
+  folder = LIKES[i][1].replace(/\s+/g,"");            // 폴더 이름 = 띄어쓰기 없는 이름
+  idx = 1; show(); modal.classList.add("open");
+}
+function closeModal(){ modal.classList.remove("open"); }
+function go(d){ idx = (idx - 1 + d + TOTAL) % TOTAL + 1; show(); }
+$("likes").addEventListener("click", e => { const b = e.target.closest(".mini"); if(b) openModal(+b.dataset.i); });
+$("prev").onclick = () => go(-1);
+$("next").onclick = () => go(1);
+$("close").onclick = closeModal;
+modal.addEventListener("click", e => { if(!$("box").contains(e.target)) closeModal(); }); // 바깥 누르면 닫힘
+addEventListener("keydown", e => {
+  if(!modal.classList.contains("open")) return;
+  if(e.key === "Escape") closeModal();
+  if(e.key === "ArrowLeft") go(-1);
+  if(e.key === "ArrowRight") go(1);
+});
+// 손가락 좌우 밀기
+let sx = 0;
+$("box").addEventListener("touchstart", e => sx = e.touches[0].clientX, {passive:true});
+$("box").addEventListener("touchend", e => {
+  const dx = e.changedTouches[0].clientX - sx;
+  if(Math.abs(dx) > 40) go(dx < 0 ? 1 : -1);
+});
+</script>
 </body>
 </html>
