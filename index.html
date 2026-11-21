@@ -152,11 +152,11 @@ footer b{color:var(--gold);font-size:20px}
 }
 @media(prefers-reduced-motion:reduce){*{animation-duration:0s!important}}
 
+.today-btn{display:inline-block;margin-top:26px;padding:14px 34px;font-size:18px;font-weight:700;color:#1a1204;background:linear-gradient(135deg,#f9e8bd,#e8bf78 50%,#b8862f);border-radius:999px}
 .today-slot{margin:26px auto 0;max-width:420px;padding:22px 20px;border-radius:22px;background:#1e293b;color:#f8fafc;text-align:center;box-shadow:0 12px 30px rgba(0,0,0,.28)}
 .ts-date{font-size:19px;font-weight:700;color:#e8bf78}
 .ts-date span{font-size:15px;font-weight:500;opacity:.85;margin-left:6px}
 .ts-quote{margin-top:10px;font-size:17px;font-weight:600;line-height:1.5}
-.ts-foot{margin-top:12px;font-size:12px;opacity:.6}
 </style>
 </head>
 <body>
@@ -337,9 +337,8 @@ fetch('today.html').then(r=>r.text()).then(t=>{
   const q=c=>{const e=d.querySelector('.'+c);return e?e.textContent.trim():'';};
   document.getElementById('todaySlot').innerHTML=
     '<div class="ts-date">'+q('date')+'<span>'+q('day')+'</span></div>'+
-    '<div class="ts-quote">'+q('quote')+'</div>'+
-    '<div class="ts-foot">매일 아침 8시에 로봇이 새로 씁니다</div>';
-}).catch(()=>{document.getElementById('todaySlot').style.display='none';});
+    '<div class="ts-quote">'+q('quote')+'</div>';
+}).catch(()=>{const el=document.getElementById('todaySlot'); if(el) el.style.display='none';});
 </script>
 </body>
 </html>
